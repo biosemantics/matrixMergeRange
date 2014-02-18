@@ -36,8 +36,6 @@ public class FromToValue {
 	}
 	
 	public String toString() {
-		if(fromValue.isEmpty() && toValue.isEmpty())
-			return "";
 		return fromValue + " -> " + toValue;
 	}
 	

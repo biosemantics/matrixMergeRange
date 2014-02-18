@@ -9,10 +9,13 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
@@ -130,12 +133,14 @@ public class Converter {
 			String character = line[i];
 			if(character.endsWith(fromSuffix)) {
 				//fromToValues.put(i, new LinkedList<FromToValue>());
-				fromCharacters.put(i, character);
-				reverseFromCharacters.put(character.substring(0, character.lastIndexOf(fromSuffix)), i);
+				String nonRangeCharacter = character.substring(0, character.lastIndexOf(fromSuffix));
+				fromCharacters.put(i, nonRangeCharacter);
+				reverseFromCharacters.put(nonRangeCharacter, i);
 			}
 			if(character.endsWith(toSuffix)) {
-				toCharacters.put(i, character);
-				reverseToCharacters.put(character.substring(0, character.lastIndexOf(toSuffix)), i);
+				String nonRangeCharacter = character.substring(0, character.lastIndexOf(toSuffix));
+				toCharacters.put(i, nonRangeCharacter);
+				reverseToCharacters.put(nonRangeCharacter, i);
 			}
 		}
 		
@@ -155,7 +160,28 @@ public class Converter {
 
 
 	private String getMergedValue(FromToValue fromToValue) {
-		return fromToValue.toString();
+		String fromValue = fromToValue.getFromValue();
+		String toValue = fromToValue.getToValue();
+		
+		Set<String> overallItems = new HashSet<String>();
+		Set<String> fromItems = new HashSet<String>(Arrays.asList(fromValue.split("\\|")));
+		Set<String> toItems = new HashSet<String>(Arrays.asList(toValue.split("\\|")));
+		overallItems.addAll(fromItems);
+		overallItems.addAll(toItems);
+		
+		if(overallItems.size() == fromItems.size() && overallItems.size() == toItems.size()) {
+			String result = "";
+			for(String item : overallItems) {
+				result += item + "|";
+			}
+			return result.substring(0, result.length() - 1);
+		}
+
+		if(fromValue.isEmpty() && toValue.isEmpty())
+			return "";
+		if(fromValue.trim().equals(toValue.trim())) 
+			return fromValue;
+		return fromValue + " -> " + toValue;
 	}
 
 	private List<String[]> readInput() throws IOException {
